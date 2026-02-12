@@ -4,7 +4,7 @@
 
 Building AI agents that can interact with social platforms, execute tasks, and learn from their environment has traditionally required complex orchestration, API management, and careful state handling. This article demonstrates how **Tools4AI** and **Moltbook** work together to simplify AI agent development to just a few annotations.
 
-By the end of this article, you'll understand how to create a fully functional AI agent that:
+By the end of this article, you'll understand how to create a functional AI agent that:
 - Automatically discovers and exposes its capabilities
 - Interacts with the Moltbook social platform
 - Uses AI to generate intelligent responses
@@ -35,7 +35,7 @@ By the end of this article, you'll understand how to create a fully functional A
 ┌─────────────────────────────────────────────────────────────┐
 │                    Tools4AI Framework                        │
 │  ┌────────────────────────────────────────────────────┐    │
-│  │  Action Discovery (Scans @Predict annotations)     │    │
+│  │  Action Discovery (Scans @Agent and @Action)       │    │
 │  ├────────────────────────────────────────────────────┤    │
 │  │  AI Processor (Integrates OpenAI/Gemini/Claude)    │    │
 │  ├────────────────────────────────────────────────────┤    │
@@ -45,7 +45,7 @@ By the end of this article, you'll understand how to create a fully functional A
                            ↑
                            │
 ┌─────────────────────────────────────────────────────────────┐
-│              Your Agent Actions (@Predict)                   │
+│         Your Agent Actions (@Agent and @Action)              │
 │  - getCarInfo()     - compareCars()                         │
 │  - getCarPricing()  - getBookingStatus()                    │
 └─────────────────────────────────────────────────────────────┘
@@ -58,32 +58,32 @@ By the end of this article, you'll understand how to create a fully functional A
 3. **Moltbook Platform**: Social environment where agents interact
 4. **Your Actions**: Domain-specific functionality with simple annotations
 
-## Step 1: Creating Agent Actions with @Predict
+## Step 1: Creating Agent Actions with @Agent and @Action
 
-The magic starts with Tools4AI's `@Predict` annotation. You simply annotate methods, and they automatically become AI-accessible functions.
+The magic starts with Tools4AI's `@Agent` and `@Action` annotations. You simply annotate methods, and they automatically become AI-accessible functions.
 
 ### Example: Car Service Agent
 
 ```java
-package io.github.vishalmysore.agent.actions;
+package io.github.moltbook.agent.actions;
 
-import com.t4a.annotations.Predict;
+import com.t4a.annotations.Action;
+import com.t4a.annotations.Agent;
 import org.springframework.stereotype.Component;
 
 /**
  * Car service actions - automatically discovered by Tools4AI
- * Each @Predict method becomes an AI function
+ * Each @Action method becomes an AI function
  */
+@Agent(groupName = "CarServiceAgent", 
+       groupDescription = "AI agent that provides car information, comparisons, pricing, and booking services")
 @Component
 public class CarServiceActions {
 
     /**
      * Get detailed information about a car model
      */
-    @Predict(
-            name = "get_car_info",
-            description = "Get detailed information about a specific car model including specs, features, and availability"
-    )
+    @Action(description = "Get detailed information about a specific car model including specs, features, and availability")
     public String getCarInfo(String carModel) {
         // Your business logic here
         return String.format(
@@ -95,10 +95,7 @@ public class CarServiceActions {
     /**
      * Get pricing for different car types
      */
-    @Predict(
-            name = "get_car_pricing",
-            description = "Get current pricing information for a car type (sedan, suv, sports, electric)"
-    )
+    @Action(description = "Get current pricing information for a car type (sedan, suv, sports, electric)")
     public String getCarPricing(String carType) {
         return switch (carType.toLowerCase()) {
             case "sedan" -> "Sedans: $25,000 - $45,000";
@@ -112,10 +109,7 @@ public class CarServiceActions {
     /**
      * Compare two car models
      */
-    @Predict(
-            name = "compare_cars",
-            description = "Compare specifications and features between two car models"
-    )
+    @Action(description = "Compare specifications and features between two car models")
     public String compareCars(String car1, String car2) {
         return String.format("""
                 Comparison: %s vs %s
@@ -137,10 +131,7 @@ public class CarServiceActions {
     /**
      * List available car types
      */
-    @Predict(
-            name = "list_car_types",
-            description = "List all available car types in the inventory"
-    )
+    @Action(description = "List all available car types in the inventory")
     public String listCarTypes() {
         return """
                 Available Car Types:
@@ -155,10 +146,7 @@ public class CarServiceActions {
     /**
      * Check booking status
      */
-    @Predict(
-            name = "get_booking_status",
-            description = "Check the status of a car booking using the booking ID"
-    )
+    @Action(description = "Check the status of a car booking using the booking ID")
     public String getBookingStatus(String bookingId) {
         return String.format(
                 "Booking ID: %s\nStatus: Confirmed\nPickup Date: 2026-02-15\nReturn Date: 2026-02-20\nVehicle: Tesla Model 3",
@@ -171,7 +159,7 @@ public class CarServiceActions {
 ### What Just Happened?
 
 Tools4AI automatically:
-1. **Scans** your classpath for `@Predict` annotations
+1. **Scans** your classpath for `@Agent` and `@Action` annotations
 2. **Generates** JSON-RPC function schemas
 3. **Registers** methods with the AI model
 4. **Handles** parameter marshalling and result formatting
@@ -180,7 +168,7 @@ Tools4AI automatically:
 
 ```properties
 # tools4ai.properties
-packagesToScan=io.github.moltbook.agent.actions
+packagesToScan=io.github.moltbook.agent.actions,io.github.vishalmysore.policy
 openAiKey=your-openai-api-key
 # Or use Gemini, Claude, Anthropic, etc.
 ```
@@ -192,7 +180,7 @@ Moltbook is a social platform for AI agents. Your agent can post, comment, searc
 ### The Moltbook Client
 
 ```java
-package io.github.vishalmysore.client;
+package io.github.moltbook.client;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -333,14 +321,14 @@ public class MoltbookClient {
 Unlike traditional webhook-based agents, this uses a **pull-based** architecture:
 
 ```java
-package io.github.vishalmysore.client;
+package io.github.moltbook.client;
 
 import com.t4a.predict.PredictionLoader;
 import com.t4a.predict.Tools4AI;
 import com.t4a.processor.AIProcessor;
-import io.github.vishalmysore.analyzer.FeedAnalyzer;
-import io.github.vishalmysore.model.FeedItem;
-import io.github.vishalmysore.service.ActivityTrackingService;
+import io.github.moltbook.analyzer.FeedAnalyzer;
+import io.github.moltbook.model.FeedItem;
+import io.github.moltbook.service.ActivityTrackingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -653,6 +641,7 @@ public class MoltbookHeartbeat {
     }
 
     private void handleVerification(String response) {
+        // Extract verification challenge and solve using AI
         // Implementation details...
     }
 }
@@ -663,7 +652,7 @@ public class MoltbookHeartbeat {
 Track what your agent is doing with a real-time dashboard:
 
 ```java
-package io.github.vishalmysore.service;
+package io.github.moltbook.service;
 
 import lombok.Data;
 import org.springframework.stereotype.Service;
@@ -729,9 +718,9 @@ public class ActivityTrackingService {
 ### Dashboard Controller
 
 ```java
-package io.github.vishalmysore.controller;
+package io.github.moltbook.controller;
 
-import io.github.vishalmysore.service.ActivityTrackingService;
+import io.github.moltbook.service.ActivityTrackingService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -904,8 +893,8 @@ moltbook.agent.description=AI agent with dynamic capabilities powered by Tools4A
 ```properties
 # tools4ai.properties
 
-# Package to scan for @Predict annotations
-packagesToScan=io.github.moltbook.agent.actions
+# Packages to scan for @Agent and @Action annotations
+packagesToScan=io.github.moltbook.agent.actions,io.github.vishalmysore.policy
 
 # AI Provider (choose one)
 openAiKey=your-openai-api-key
@@ -995,7 +984,7 @@ Open http://localhost:8080/ to see your agent's activities in real-time!
 ### The Flow
 
 1. **Startup**:
-   - Tools4AI scans for `@Predict` methods
+   - Tools4AI scans for `@Agent` and `@Action` annotations
    - Generates JSON-RPC function schemas
    - Initializes AI processor
    - Spring Boot starts heartbeat scheduler
@@ -1009,7 +998,7 @@ Open http://localhost:8080/ to see your agent's activities in real-time!
 
 3. **AI Function Calling**:
    - AI model receives user query
-   - Determines which `@Predict` function to call
+   - Determines which `@Action` function to call
    - Tools4AI marshals parameters
    - Executes your method
    - Returns result to AI
@@ -1042,10 +1031,10 @@ Agent's Process:
 ## Key Advantages
 
 ### 1. Zero Boilerplate
-Just add `@Predict` - no manual API wrappers, no JSON serialization, no prompt engineering for function calling.
+Just add `@Agent` and `@Action` - no manual API wrappers, no JSON serialization, no prompt engineering for function calling.
 
 ### 2. Dynamic Capabilities
-Add a new `@Predict` method → Agent automatically knows about it → AI can use it. No configuration updates needed.
+Add a new `@Action` method → Agent automatically knows about it → AI can use it. No configuration updates needed.
 
 ### 3. Pull-Based Architecture
 No webhooks, no inbound firewall rules, no certificate management. Agent controls when to check for new content.
@@ -1113,9 +1102,9 @@ public class MyController {
 
 ## Conclusion
 
-By combining **Tools4AI** for capability discovery and **Moltbook** for social AI interaction, you can build production-ready AI agents with minimal code:
+By combining **Tools4AI** for capability discovery and **Moltbook** for social AI interaction, you can build AI agents with minimal code:
 
-1. Annotate methods with `@Predict`
+1. Annotate classes with `@Agent` and methods with `@Action`
 2. Configure API keys
 3. Run
 
