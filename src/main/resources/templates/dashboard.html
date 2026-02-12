@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moltbook Agent Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .activities {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .activities h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .activity-item {
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+        
+        .activity-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .activity-item.post {
+            border-left-color: #28a745;
+        }
+        
+        .activity-item.comment {
+            border-left-color: #17a2b8;
+        }
+        
+        .activity-item.observe {
+            border-left-color: #ffc107;
+        }
+        
+        .activity-item.error {
+            border-left-color: #dc3545;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.success {
+            background: #28a745;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
+        }
+        
+        .status-indicator.failed {
+            background: #dc3545;
+            box-shadow: 0 0 8px rgba(220, 53, 69, 0.5);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .activity-type {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .activity-type.post {
+            background: #28a745;
+        }
+        
+        .activity-type.comment {
+            background: #17a2b8;
+        }
+        
+        .activity-type.observe {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .activity-type.error {
+            background: #dc3545;
+        }
+        
+        .activity-time {
+            color: #999;
+            font-size: 0.85em;
+        }
+        
+        .activity-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .activity-content {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        .post-id {
+            color: #999;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-left: auto;
+        }
+        
+        .refresh-btn:hover {
+            background: #5568d3;
+        }
+        
+        .auto-refresh {
+            color: #666;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>🦞 ChotuClaw : Moltbook OpenClaw Agent in Java</h1>
+                <div>
+                    <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+                    <span class="auto-refresh">Auto-refreshes every 30s</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3 th:text="${stats.totalPosts}">0</h3>
+                <p>📝 Posts Created</p>
+            </div>
+            <div class="stat-card">
+                <h3 th:text="${stats.totalComments}">0</h3>
+                <p>💬 Comments Made</p>
+            </div>
+            <div class="stat-card">
+                <h3 th:text="${stats.totalObservations}">0</h3>
+                <p>👀 Observations</p>
+            </div>
+            <div class="stat-card">
+                <h3 th:text="${stats.totalErrors}">0</h3>
+                <p>❌ Errors</p>
+            </div>
+            <div class="stat-card" style="grid-column: span 2;">
+                <h3 th:text="${stats.lastActivity}">N/A</h3>
+                <p>⏰ Last Activity</p>
+            </div>
+        </div>
+        
+        <div class="activities">
+            <h2>📊 Recent Activity</h2>
+            
+            <div th:if="${activities.isEmpty()}" class="empty-state">
+                <p>No activity yet. The agent will start tracking posts, comments, and observations.</p>
+            </div>
+            
+            <div th:each="activity : ${activities}" 
+                 th:class="${'activity-item ' + activity.type.toLowerCase()}">
+                <div class="activity-header">
+                    <div>
+                        <span th:if="${activity.status}" 
+                              th:class="${activity.status == 'SUCCESS' ? 'status-indicator success' : 'status-indicator failed'}">
+                        </span>
+                        <span th:class="${'activity-type ' + activity.type.toLowerCase()}" 
+                              th:text="${activity.type}">POST</span>
+                    </div>
+                    <span class="activity-time" th:text="${activity.getFormattedTime()}">Time</span>
+                </div>
+                <div class="activity-title" th:text="${activity.title}">Title</div>
+                <div class="activity-content" th:text="${activity.getShortContent()}">Content</div>
+                <div class="post-id" th:if="${activity.postId}" 
+                     th:text="'Post ID: ' + ${activity.postId}">Post ID</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-refresh every 30 seconds
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
