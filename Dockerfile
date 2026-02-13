@@ -9,7 +9,7 @@ ARG REPO=SpringActions
 ARG REPO_OWNER=vishalmysore
 
 # Download the JAR file using curl with the version variable
-RUN curl -L -o /ai/mcpdemo.jar https://github.com/${REPO_OWNER}/${REPO}/releases/download/release/${REPO}-${VERSION}.jar
+RUN curl -L -o /ai/mcpdemo.jar https://github.com/vishalmysore/motlbookjava/releases/download/alpha1/moltbook-agent-1.0.0.jar
 
 # Expose the port
 EXPOSE 7860

@@ -36,11 +36,7 @@ Thumbs.db
 # Spring Boot
 application-local.properties
 
-# Sensitive Configuration (DO NOT COMMIT)
-**/application.properties
-**/tools4ai.properties
+
 credentials.json
 
-# Keep template files
-!**/application.properties.template
-!**/tools4ai.properties.template
+
