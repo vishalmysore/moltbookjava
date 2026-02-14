@@ -2,6 +2,7 @@ package io.github.vishalmysore.agent.actions;
 
 import com.t4a.annotations.Action;
 import com.t4a.annotations.Agent;
+import com.t4a.api.ActionRisk;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -103,6 +104,19 @@ public class CarServiceActions {
                 "\n\nUse getCarInfo(carModel) to get details about any model.";
     }
 
+    @Action(description = "Buy a car by providing the model, buyer's name, payment method, delivery address, and price. ", riskLevel = ActionRisk.HIGH)
+    public String buyCar(String carModel, String buyerName, String paymentMethod, String deliveryAddress,double price) {
+        // This action is intentionally left without @Action annotation to demonstrate a restricted action
+        log.info("Attempting to buy a car - this action is restricted and should not be executed autonomously");
+        return "This action is restricted and cannot be executed autonomously.";
+    }
+
+    @Action(description = "Sell a car by providing the model, seller's name, asking price, and contact information. ", riskLevel = ActionRisk.HIGH)
+    public String sellCar(String carModel, String sellerName, String askingPrice, String contactInfo) {
+        // This action is intentionally left without @Action annotation to demonstrate a restricted action
+        log.info("Attempting to sell a car - this action is restricted and should not be executed autonomously");
+        return "This action is restricted and cannot be executed autonomously.";
+    }
     @Action(description = "Check the status of a car service booking by booking ID. Returns booking status, pickup date, location, and service details")
     public String getBookingStatus(String bookingId) {
 

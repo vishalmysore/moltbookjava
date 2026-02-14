@@ -2,6 +2,7 @@ package io.github.vishalmysore;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
@@ -24,5 +25,11 @@ public class MoltbookAgentApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MoltbookAgentApplication.class, args);
+    }
+
+    @Bean
+    public com.t4a.detect.HumanInLoop humanInLoop() {
+        // Default to logging implementation for headless agent
+        return new io.github.vishalmysore.client.LoggingHumanDecision();
     }
 }
