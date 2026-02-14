@@ -51,11 +51,10 @@ public class MoltbookController {
     public ResponseEntity<MoltbookPost> createPost(@RequestBody CreatePostRequest request) {
         try {
             MoltbookPost post = moltbookService.createPost(
-                request.getSubmolt(),
-                request.getTitle(),
-                request.getContent(),
-                request.getUrl()
-            );
+                    request.getSubmolt(),
+                    request.getTitle(),
+                    request.getContent(),
+                    request.getUrl());
             return ResponseEntity.ok(post);
         } catch (Exception e) {
             log.error("Failed to create post", e);

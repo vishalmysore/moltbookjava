@@ -14,8 +14,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * - Makes outbound REST calls only (no inbound requests)
  * 
  * Architecture:
- *   [Heartbeat Loop] → GET feed → Analyze → Tools4AI → POST actions
- *   
+ * [Heartbeat Loop] → GET feed → Analyze → Tools4AI → POST actions
+ * 
  * No REST endpoints exposed - everything is pull-based!
  */
 @SpringBootApplication
